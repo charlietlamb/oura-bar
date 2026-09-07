@@ -6,7 +6,7 @@ Your Oura Ring scores in the macOS menu bar, with a full stats card one click aw
 
 ![Dropdown](docs/dropdown.png)
 
-Sleep, readiness, and activity scores sit in the menu bar with icons tinted by score. The dropdown shows score rings, sleep stages, contributors, activity breakdown, HRV, heart rate, breathing, SpO2, and stress. It refreshes every two minutes and follows the system light/dark theme.
+Sleep, readiness, and activity scores sit in the menu bar with icons that fill in as the score improves. The dropdown shows score rings, sleep stages, contributors, activity breakdown, HRV, heart rate, breathing, SpO2, and stress. It refreshes every two minutes and follows the system light/dark theme.
 
 The data fetching and card rendering are TypeScript on [Bun](https://bun.sh) with [Effect](https://effect.website). A ~200 line Swift host draws the status item and menu. No Electron, no third-party menu bar app.
 

@@ -4,18 +4,23 @@ enum StatusTitle {
     private static let symbolSize: CGFloat = 12
     private static let valueFont = NSFont.monospacedDigitSystemFont(ofSize: 13, weight: .medium)
 
+    private struct Style {
+        let filled: Bool
+        let alpha: CGFloat
+    }
+
     static func render(_ scores: Scores) -> NSAttributedString {
         let title = NSMutableAttributedString()
         let metrics: [(String, Int?)] = [
-            ("moon.zzz.fill", scores.sleep),
-            ("bolt.heart.fill", scores.readiness),
-            ("flame.fill", scores.activity),
+            ("moon.zzz", scores.sleep),
+            ("bolt.heart", scores.readiness),
+            ("flame", scores.activity),
         ]
         for (index, metric) in metrics.enumerated() {
             if index > 0 {
                 title.append(NSAttributedString(string: "   ", attributes: [.font: valueFont]))
             }
-            title.append(symbol(metric.0, tone: tone(for: metric.1)))
+            title.append(symbol(metric.0, style: style(for: metric.1)))
             title.append(NSAttributedString(string: " " + label(metric.1), attributes: [.font: valueFont]))
         }
         return title
@@ -25,24 +30,25 @@ enum StatusTitle {
         score.map(String.init) ?? "--"
     }
 
-    private static func tone(for score: Int?) -> NSColor {
-        guard let score else { return .tertiaryLabelColor }
-        if score >= 85 { return NSColor(srgbRed: 0.19, green: 0.82, blue: 0.35, alpha: 1) }
-        if score >= 70 { return NSColor(srgbRed: 1.0, green: 0.62, blue: 0.04, alpha: 1) }
-        return NSColor(srgbRed: 1.0, green: 0.27, blue: 0.23, alpha: 1)
+    private static func style(for score: Int?) -> Style {
+        guard let score else { return Style(filled: false, alpha: 0.35) }
+        if score >= 85 { return Style(filled: true, alpha: 1) }
+        if score >= 70 { return Style(filled: false, alpha: 1) }
+        return Style(filled: false, alpha: 0.5)
     }
 
-    private static func symbol(_ name: String, tone: NSColor) -> NSAttributedString {
-        let configuration = NSImage.SymbolConfiguration(pointSize: symbolSize, weight: .semibold)
-            .applying(NSImage.SymbolConfiguration(paletteColors: [tone]))
-        guard let image = NSImage(systemSymbolName: name, accessibilityDescription: nil)?
+    private static func symbol(_ name: String, style: Style) -> NSAttributedString {
+        let symbolName = style.filled ? name + ".fill" : name
+        let tint = NSColor.labelColor.withAlphaComponent(style.alpha)
+        let configuration = NSImage.SymbolConfiguration(pointSize: symbolSize, weight: .medium)
+            .applying(NSImage.SymbolConfiguration(paletteColors: [tint]))
+        guard let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil)?
             .withSymbolConfiguration(configuration) else {
             return NSAttributedString(string: "")
         }
         let attachment = NSTextAttachment()
         attachment.image = image
-        let descent = valueFont.descender
-        attachment.bounds = NSRect(x: 0, y: descent + 1, width: image.size.width, height: image.size.height)
+        attachment.bounds = NSRect(x: 0, y: valueFont.descender + 1, width: image.size.width, height: image.size.height)
         return NSAttributedString(attachment: attachment)
     }
 }
