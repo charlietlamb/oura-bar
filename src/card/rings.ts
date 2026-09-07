@@ -1,5 +1,5 @@
 import type { Block } from "./blocks";
-import { cardWidth, ring, text } from "./svg";
+import { ring, text } from "./svg";
 import { scoreTone, type Theme } from "./theme";
 
 export interface RingSpec {
@@ -49,15 +49,15 @@ export const rings = (
   center: RingSpec,
   right: RingSpec
 ): Block => ({
-  height: 132,
-  render: (y) => {
-    const cy = y + 58;
+  height: 112,
+  render: (frame) => {
+    const cy = frame.y + 48;
     const labelY = cy + 42 + 8 + 14;
-    const spacing = cardWidth / 4;
+    const spacing = frame.width / 4;
     return [
-      drawRing(theme, left, spacing, cy, 30, 6, 16, labelY),
-      drawRing(theme, center, spacing * 2, cy, 42, 8, 22, labelY),
-      drawRing(theme, right, spacing * 3, cy, 30, 6, 16, labelY),
+      drawRing(theme, left, frame.x + spacing, cy, 30, 6, 16, labelY),
+      drawRing(theme, center, frame.x + spacing * 2, cy, 42, 8, 22, labelY),
+      drawRing(theme, right, frame.x + spacing * 3, cy, 30, 6, 16, labelY),
     ].join("");
   },
 });

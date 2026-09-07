@@ -2,7 +2,7 @@ import AppKit
 
 enum StatusTitle {
     private static let symbolSize: CGFloat = 12
-    private static let valueFont = NSFont.monospacedDigitSystemFont(ofSize: 13, weight: .medium)
+    private static let valueFont = NSFont.monospacedDigitSystemFont(ofSize: 13, weight: .regular)
 
     private struct Style {
         let filled: Bool
@@ -40,7 +40,7 @@ enum StatusTitle {
     private static func symbol(_ name: String, style: Style) -> NSAttributedString {
         let symbolName = style.filled ? name + ".fill" : name
         let tint = NSColor.labelColor.withAlphaComponent(style.alpha)
-        let configuration = NSImage.SymbolConfiguration(pointSize: symbolSize, weight: .medium)
+        let configuration = NSImage.SymbolConfiguration(pointSize: symbolSize, weight: .regular)
             .applying(NSImage.SymbolConfiguration(paletteColors: [tint]))
         guard let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil)?
             .withSymbolConfiguration(configuration) else {
