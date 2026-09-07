@@ -1,5 +1,5 @@
 import { Context, DateTime, Effect, Layer } from "effect";
-import { type DateRange, OuraApi, type OuraApiError } from "../api/oura-api";
+import { OuraApi, type OuraApiError } from "../api/oura-api";
 import {
   DailyActivity,
   DailyReadiness,
@@ -15,6 +15,7 @@ import {
   latestByDay,
   latestNight,
 } from "./daily-stats";
+import { recentRange, todayIso } from "./date-range";
 
 export interface OuraStatsShape {
   readonly latest: Effect.Effect<DailyStats, OuraApiError>;
@@ -25,21 +26,9 @@ export class OuraStats extends Context.Tag("@oura/OuraStats")<
   OuraStatsShape
 >() {}
 
-const lookbackDays = 3;
-
-const isoDate = (date: DateTime.DateTime) => {
-  const parts = DateTime.toParts(date);
-  const pad = (value: number) => String(value).padStart(2, "0");
-  return `${parts.year}-${pad(parts.month)}-${pad(parts.day)}`;
-};
-
-const recentRange = Effect.gen(function* () {
+const currentRange = Effect.gen(function* () {
   const today = yield* DateTime.nowInCurrentZone;
-  const range: DateRange = {
-    startDate: isoDate(DateTime.subtract(today, { days: lookbackDays })),
-    endDate: isoDate(today),
-  };
-  return range;
+  return { range: recentRange(today), today: todayIso(today) };
 });
 
 export const OuraStatsLive = Layer.effect(
@@ -53,7 +42,7 @@ export const OuraStatsLive = Layer.effect(
       );
 
     const latest = Effect.gen(function* () {
-      const range = yield* recentRange;
+      const { range, today } = yield* currentRange;
       const [readiness, sleep, activity, nights, spo2, stress, resilience] =
         yield* Effect.all(
           [
@@ -81,7 +70,7 @@ export const OuraStatsLive = Layer.effect(
       };
 
       const stats: DailyStats = {
-        day: dayOf(partial, range.endDate),
+        day: dayOf(partial, today),
         ...partial,
       };
       return stats;

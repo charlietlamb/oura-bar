@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test";
-import { Option } from "effect";
+import { DateTime, Option } from "effect";
 import type { SleepPeriod } from "../src/schema/oura";
 import { dayOf, latestByDay, latestNight } from "../src/stats/daily-stats";
+import { recentRange } from "../src/stats/date-range";
 
 const night = (day: string, type: string): SleepPeriod => ({
   id: `${day}-${type}`,
@@ -66,5 +67,15 @@ describe("dayOf", () => {
       resilience: Option.none(),
     };
     expect(dayOf(empty, "2026-09-07")).toBe("2026-09-07");
+  });
+});
+
+describe("recentRange", () => {
+  test("runs from three days back through tomorrow", () => {
+    const today = DateTime.unsafeMake("2026-09-07T12:00:00Z");
+    expect(recentRange(today)).toEqual({
+      startDate: "2026-09-04",
+      endDate: "2026-09-08",
+    });
   });
 });

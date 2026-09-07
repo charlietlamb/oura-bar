@@ -118,6 +118,7 @@ tests/                   pure unit tests
 - **Resilience row missing.** Oura requires the `stress` scope for `daily_resilience`. Add it to the app in Oura's developer portal and to `OURA_SCOPES`, then re-run `bun run auth`.
 - **Not authenticated after a while.** Refresh tokens are single use. Running two copies of the app at once will invalidate one of them. Run `bun run auth` again.
 - **Verifying the menu from a script.** `pkill -USR1 -x OuraBar` toggles the menu open and closed, which is handy with `screencapture`.
+- **Sleep looks a day old.** Oura treats `end_date` as exclusive for the `sleep` and `daily_activity` collections, so the query range runs through tomorrow. If you change the range, keep that.
 
 ## License
 
