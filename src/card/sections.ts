@@ -11,33 +11,46 @@ import {
 } from "../menubar/format";
 import type { DailyStats } from "../stats/daily-stats";
 import {
-  type BarItem,
   type Block,
-  barChart,
   type Cell,
   grid,
   progressBar,
   row,
-  sectionTitle,
+  sectionHeader,
   spacer,
   stack,
   stackedBar,
 } from "./blocks";
-import { contributorLabel } from "./contributor-labels";
-import type { Theme } from "./theme";
+import { scoreTone, type Theme } from "./theme";
 
-const contributorBars = (
+const contributorCells = (
+  theme: Theme,
   contributors: Record<string, number | null | undefined>
-): BarItem[] =>
+): Cell[] =>
   Object.entries(contributors).map(([key, value]) => ({
-    label: contributorLabel(key),
-    value,
+    label: titleCase(key),
+    value: scoreText(value),
+    dot: scoreTone(theme, value),
   }));
 
 export const sleepSection = (theme: Theme, stats: DailyStats): Block => {
   const night = Option.match(stats.night, {
     onNone: () => [],
     onSome: (night) => [
+      grid(theme, [
+        {
+          label: "Total sleep",
+          value: hoursMinutes(night.total_sleep_duration),
+        },
+        { label: "Efficiency", value: percent(night.efficiency) },
+        { label: "In bed", value: hoursMinutes(night.time_in_bed) },
+        { label: "Latency", value: hoursMinutes(night.latency) },
+      ]),
+      row(theme, {
+        label: "Bedtime",
+        value: `${clockTime(night.bedtime_start)} – ${clockTime(night.bedtime_end)}`,
+      }),
+      spacer(4),
       stackedBar(theme, [
         { value: night.deep_sleep_duration ?? 0, color: theme.deep },
         { value: night.rem_sleep_duration ?? 0, color: theme.rem },
@@ -67,30 +80,16 @@ export const sleepSection = (theme: Theme, stats: DailyStats): Block => {
           dot: theme.awake,
         },
       ]),
-      spacer(6),
-      grid(theme, [
-        {
-          label: "Total sleep",
-          value: hoursMinutes(night.total_sleep_duration),
-        },
-        { label: "Efficiency", value: percent(night.efficiency) },
-        { label: "In bed", value: hoursMinutes(night.time_in_bed) },
-        { label: "Latency", value: hoursMinutes(night.latency) },
-      ]),
-      row(theme, {
-        label: "Bedtime",
-        value: `${clockTime(night.bedtime_start)} – ${clockTime(night.bedtime_end)}`,
-      }),
     ],
   });
   const contributors = Option.match(stats.sleep, {
     onNone: () => [],
     onSome: (sleep) => [
-      spacer(8),
-      barChart(theme, contributorBars(sleep.contributors)),
+      spacer(6),
+      grid(theme, contributorCells(theme, sleep.contributors)),
     ],
   });
-  return stack([sectionTitle(theme, "Sleep"), ...night, ...contributors]);
+  return stack([sectionHeader(theme, "Sleep"), ...night, ...contributors]);
 };
 
 export const readinessSection = (theme: Theme, stats: DailyStats): Block =>
@@ -98,8 +97,8 @@ export const readinessSection = (theme: Theme, stats: DailyStats): Block =>
     onNone: () => stack([]),
     onSome: (readiness) =>
       stack([
-        sectionTitle(theme, "Readiness"),
-        barChart(theme, contributorBars(readiness.contributors)),
+        sectionHeader(theme, "Readiness"),
+        grid(theme, contributorCells(theme, readiness.contributors)),
         spacer(4),
         row(theme, {
           label: "Temperature deviation",
@@ -113,7 +112,26 @@ export const activitySection = (theme: Theme, stats: DailyStats): Block =>
     onNone: () => stack([]),
     onSome: (activity) =>
       stack([
-        sectionTitle(theme, "Activity"),
+        sectionHeader(theme, "Activity"),
+        grid(theme, [
+          { label: "Steps", value: activity.steps.toLocaleString() },
+          {
+            label: "Walking",
+            value: kilometers(activity.equivalent_walking_distance),
+          },
+          {
+            label: "Active calories",
+            value: `${activity.active_calories} / ${activity.target_calories}`,
+          },
+          { label: "Total calories", value: String(activity.total_calories) },
+        ]),
+        spacer(2),
+        progressBar(
+          theme,
+          activity.active_calories / Math.max(activity.target_calories, 1),
+          theme.good
+        ),
+        spacer(4),
         stackedBar(theme, [
           { value: activity.high_activity_time, color: theme.high },
           { value: activity.medium_activity_time, color: theme.medium },
@@ -144,30 +162,7 @@ export const activitySection = (theme: Theme, stats: DailyStats): Block =>
           },
         ]),
         spacer(6),
-        row(theme, {
-          label: "Active calories",
-          value: `${activity.active_calories} / ${activity.target_calories}`,
-        }),
-        progressBar(
-          theme,
-          activity.active_calories / Math.max(activity.target_calories, 1),
-          theme.good
-        ),
-        spacer(2),
-        grid(theme, [
-          { label: "Steps", value: activity.steps.toLocaleString() },
-          {
-            label: "Walking",
-            value: kilometers(activity.equivalent_walking_distance),
-          },
-          { label: "Total calories", value: String(activity.total_calories) },
-          {
-            label: "Inactivity alerts",
-            value: String(activity.inactivity_alerts),
-          },
-        ]),
-        spacer(8),
-        barChart(theme, contributorBars(activity.contributors)),
+        grid(theme, contributorCells(theme, activity.contributors)),
       ]),
   });
 
@@ -215,5 +210,5 @@ export const vitalsSection = (theme: Theme, stats: DailyStats): Block => {
   });
   return cells.length === 0
     ? stack([])
-    : stack([sectionTitle(theme, "Vitals"), grid(theme, cells)]);
+    : stack([sectionHeader(theme, "Vitals"), grid(theme, cells)]);
 };
