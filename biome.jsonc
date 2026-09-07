@@ -1,0 +1,22 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "extends": ["ultracite/biome/core", "ultracite/biome/type-aware"],
+  "linter": {
+    "rules": {
+      "correctness": { "useImportExtensions": "off" }
+    }
+  },
+  "javascript": {
+    "globals": ["Bun"]
+  },
+  "overrides": [
+    {
+      "includes": ["tests/**"],
+      "linter": {
+        "rules": {
+          "correctness": { "noUnresolvedImports": "off" }
+        }
+      }
+    }
+  ]
+}
