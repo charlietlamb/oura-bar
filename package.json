@@ -10,6 +10,7 @@
     "auth": "bun run src/cli/auth.ts",
     "fetch": "bun run src/cli/fetch.ts",
     "preview": "bun run src/cli/preview.ts",
+    "mcp": "bun run src/cli/mcp.ts",
     "build:host": "bun run src/cli/build-host.ts",
     "install:app": "bun run src/cli/install-app.ts",
     "start": "bun run build:host && bun run install:app && open \"$HOME/Applications/Oura Bar.app\"",
@@ -24,6 +25,7 @@
   "dependencies": {
     "@effect/platform": "0.96.1",
     "@effect/platform-bun": "0.89.0",
+    "@modelcontextprotocol/server": "2.0.0",
     "@resvg/resvg-js": "^2.6.2",
     "effect": "3.21.2"
   },

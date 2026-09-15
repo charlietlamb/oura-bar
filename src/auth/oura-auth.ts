@@ -85,10 +85,19 @@ export const OuraAuthLive = Layer.effect(
       });
     });
 
+    const isFresh = (tokens: StoredTokens, now: number) =>
+      now + expiryBuffer < tokens.expiresAt;
+
+    /* Another process sharing the token file may have refreshed already;
+       refresh tokens are single-use, so re-read before spending ours. */
     const refresh = refreshLock
       .withPermits(1)(
         Effect.gen(function* () {
           const current = yield* stored;
+          const now = yield* Clock.currentTimeMillis;
+          if (isFresh(current, now)) {
+            return current.accessToken;
+          }
           const next = yield* oauth.refresh(current.refreshToken);
           const tokens = yield* persist(next);
           yield* Effect.logInfo("oura tokens refreshed");
@@ -100,7 +109,7 @@ export const OuraAuthLive = Layer.effect(
     const accessToken = Effect.gen(function* () {
       const tokens = yield* stored;
       const now = yield* Clock.currentTimeMillis;
-      if (now + expiryBuffer >= tokens.expiresAt) {
+      if (!isFresh(tokens, now)) {
         return yield* refresh;
       }
       return tokens.accessToken;

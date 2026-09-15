@@ -17,6 +17,6 @@ const AuthLive = OuraAuthLive.pipe(
 );
 
 export const AppLive = OuraStatsLive.pipe(
-  Layer.provide(OuraApiLive),
+  Layer.provideMerge(OuraApiLive),
   Layer.provideMerge(AuthLive)
 );

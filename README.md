@@ -65,9 +65,41 @@ To keep it running after a reboot, add `~/Applications/Oura Bar.app` in System S
 | `bun run auth` | Authorize with Oura and store tokens |
 | `bun run fetch` | Fetch once and print the JSON payload the host consumes |
 | `bun run preview` | Render the stats card to `preview.png` |
+| `bun run mcp` | Run the MCP server over stdio |
 | `bun run start` | Build, install to `~/Applications`, launch |
 | `bun run restart` | Quit the running app, then build, install, launch |
 | `bun run validate` | Lint, comment check, typecheck, tests |
+
+## MCP server
+
+The same project exposes your Oura data to Claude, Cursor, or any MCP client, sharing the OAuth tokens with the menu bar app.
+
+| Tool | Returns |
+| --- | --- |
+| `oura_today` | Latest readiness, sleep, and activity with contributors, last night's stages and vitals, SpO2, stress, resilience |
+| `oura_collection` | Raw records from one collection (`daily_readiness`, `daily_sleep`, `daily_activity`, `sleep`, `daily_spo2`, `daily_stress`, `daily_resilience`) for a date range |
+| `oura_status` | Whether you are authenticated and when the access token expires. Never returns tokens |
+
+Claude Code:
+
+```sh
+claude mcp add --scope user oura -- bun run /absolute/path/to/oura-bar/src/cli/mcp.ts
+```
+
+Claude Desktop (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "oura": {
+      "command": "/Users/you/.bun/bin/bun",
+      "args": ["run", "/Users/you/Applications/Oura Bar.app/Contents/Resources/runtime/src/cli/mcp.ts"]
+    }
+  }
+}
+```
+
+Desktop apps should point at the bundled runtime inside `~/Applications/Oura Bar.app` rather than a checkout under `~/Documents`, for the same privacy-prompt reason described below. Run `bun run start` after pulling changes so the bundle is current.
 
 ## Configuration
 
